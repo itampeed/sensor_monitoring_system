@@ -1,21 +1,11 @@
 # Ignore everything by default
-*
-
-# But not these:
-!app/
-!.gitignore
 
 # Explicitly ignore these even if matched by exception
 AUTH_CLIENT_GUIDE.md
 .env
 .venv/
 node_modules/
-main.py
-run_all.py
-tkinter_ui.py
-package.json
 package-lock.json
-requirements.txt
 
 # Python cache
 __pycache__/
