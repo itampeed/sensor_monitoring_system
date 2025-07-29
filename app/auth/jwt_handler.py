@@ -16,3 +16,18 @@ def verify_jwt(token):
     except jwt.InvalidTokenError:
         print("[JWT] Invalid token.")
         return False
+
+def extract_client_id(token):
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload.get("client_id")
+    except jwt.InvalidTokenError:
+        return None
+
+def create_jwt(client_id, expires_in=24*3600):
+    payload = {
+        "client_id": client_id,
+        "exp": datetime.utcnow() + timedelta(seconds=expires_in)
+    }
+    token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+    return token
