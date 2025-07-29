@@ -15,6 +15,37 @@ def get_connection():
         port=os.getenv("DB_PORT", 5432)
     )
 
+def initialize_schema():
+    """
+    Initializes the database schema by executing schema.sql once at startup.
+    Executes each statement individually to support TimescaleDB commands.
+    """
+    try:
+        conn = get_connection()
+        cur = conn.cursor()
+
+        schema_path = os.path.join(os.path.dirname(__file__), 'schema.sql')
+        with open(schema_path, 'r', encoding='utf-8') as f:
+            schema_sql = f.read()
+
+        for statement in schema_sql.split(';'):
+            stmt = statement.strip()
+            if stmt:
+                try:
+                    cur.execute(stmt)
+                    log(f"[DB] Executed: {stmt[:50]}...")
+                except Exception as stmt_err:
+                    log(f"[DB] ❌ Error executing: {stmt[:50]}... → {stmt_err}", level="ERROR")
+                    conn.rollback()  # ← Rollback on failure but continue
+        conn.commit()
+        cur.close()
+        conn.close()
+        log("[DB] ✅ Schema initialized.")
+
+    except Exception as e:
+        log(f"[DB] Failed to initialize schema: {e}", level="ERROR")
+
+
 async def insert_sample_data(client_id, channel_id, raw_signal, filtered_signal, features, classification):
     """
     Inserts one row into the 'proben' table, including raw and filtered signals.
