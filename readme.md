@@ -17,12 +17,12 @@ This is a real-time sensor data monitoring and visualization system built with P
 ## 🏗️ Project Structure
 
 sensor_monitoring_system/
-├── app/ # Core backend logic (DB, ML, processing)
-├── .env # Environment config (DB credentials, etc.)
-├── run_all.py # Starts backend and UI
-├── tkinter_ui.py # Live dashboard GUI
-├── requirements.txt # Python dependencies
-├── README.md # Project documentation
+- ├── app/ # Core backend logic (DB, ML, processing)
+- ├── .env # Environment config (DB credentials, etc.)
+- ├── run_all.py # Starts backend and UI
+- ├── tkinter_ui.py # Live dashboard GUI
+- ├── requirements.txt # Python dependencies
+- ├── README.md # Project documentation
 
 
 ---

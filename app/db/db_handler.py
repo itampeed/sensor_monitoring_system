@@ -33,7 +33,6 @@ def initialize_schema():
             if stmt:
                 try:
                     cur.execute(stmt)
-                    log(f"[DB] Executed: {stmt[:50]}...")
                 except Exception as stmt_err:
                     log(f"[DB] ❌ Error executing: {stmt[:50]}... → {stmt_err}", level="ERROR")
                     conn.rollback()  # ← Rollback on failure but continue
