@@ -1,5 +1,3 @@
-# Ignore everything by default
-
 # Explicitly ignore these even if matched by exception
 AUTH_CLIENT_GUIDE.md
 .env
