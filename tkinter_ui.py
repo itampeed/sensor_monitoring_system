@@ -10,9 +10,10 @@ from dotenv import load_dotenv
 load_dotenv()
 sys.path.append(os.path.join(os.path.dirname(__file__), 'app'))
 from app.db.db_handler import fetch_latest_samples
+from scipy.interpolate import make_interp_spline
 
 # --- UI State ---
-SAMPLE_LIMIT = 20
+SAMPLE_LIMIT = 50
 samples = []
 selected_sample_idx = 0
 has_data = False
@@ -51,8 +52,10 @@ def update_ui():
         widget.destroy()
     for widget in client_frame.winfo_children():
         widget.destroy()
+
     # Dropdown label
     ttk.Label(client_frame, text="Client:").pack(anchor='w', padx=5, pady=5)
+
     # Sample selection
     if has_data:
         sample_list = [f"{s['timestamp']} | {s['client_id']}" for s in samples]
@@ -70,10 +73,17 @@ def update_ui():
         filtered_signal = []
         client_id = 'NO DATA'
         class_label = 'NO DATA'
-    # Plot raw
+        sample = {}
+
+    # Plot raw signal
     fig1, ax1 = plt.subplots(figsize=(4, 2))
     if has_data and raw_signal:
-        ax1.plot(raw_signal)
+        x = np.arange(len(raw_signal))
+        x_smooth = np.linspace(x.min(), x.max(), 300)  # More points for smoothness
+        spline = make_interp_spline(x, raw_signal, k=3)  # Cubic spline
+        y_smooth = spline(x_smooth)
+        
+        ax1.plot(x_smooth, y_smooth)
         ax1.set_title("Raw Signal")
     else:
         ax1.text(0.5, 0.5, 'NO DATA', fontsize=16, ha='center', va='center', color='red')
@@ -81,10 +91,16 @@ def update_ui():
     canvas1 = FigureCanvasTkAgg(fig1, master=raw_frame)
     canvas1.get_tk_widget().pack(fill='both', expand=True)
     canvas1.draw()
-    # Plot filtered
+
+    # Plot filtered signal
     fig2, ax2 = plt.subplots(figsize=(4, 2))
     if has_data and filtered_signal:
-        ax2.plot(filtered_signal)
+        x2 = np.arange(len(filtered_signal))
+        x2_smooth = np.linspace(x2.min(), x2.max(), 300)
+        spline2 = make_interp_spline(x2, filtered_signal, k=3)
+        y2_smooth = spline2(x2_smooth)
+
+        ax2.plot(x2_smooth, y2_smooth)
         ax2.set_title("Filtered Signal")
     else:
         ax2.text(0.5, 0.5, 'NO DATA', fontsize=16, ha='center', va='center', color='red')
@@ -92,13 +108,17 @@ def update_ui():
     canvas2 = FigureCanvasTkAgg(fig2, master=filtered_frame)
     canvas2.get_tk_widget().pack(fill='both', expand=True)
     canvas2.draw()
-    # Dropdown
+
+    # Client dropdown
     client_dropdown = ttk.Combobox(client_frame, values=[client_id])
     client_dropdown.pack(fill='x', padx=5, pady=5)
     client_dropdown.set(client_id)
+
     # Class display
     ttk.Label(class_frame, text=f"Class: {class_label}", font=("Arial", 24)).pack(expand=True)
-    # Error message
+
+
+    # Error message display
     if error_message:
         if not hasattr(update_ui, 'error_label'):
             update_ui.error_label = ttk.Label(main_frame, text=f"Database Error: {error_message}", foreground='red', font=("Arial", 12, "bold"))
@@ -110,7 +130,8 @@ def update_ui():
     else:
         if hasattr(update_ui, 'error_label'):
             update_ui.error_label.pack_forget()
-    # NO DATA label
+
+    # No data message
     if not has_data:
         if not hasattr(update_ui, 'no_data_label'):
             update_ui.no_data_label = ttk.Label(main_frame, text="Waiting for data... Please check your sensor or connection.", foreground='red', font=("Arial", 14, "bold"))

@@ -4,6 +4,7 @@ AUTH_CLIENT_GUIDE.md
 .venv/
 node_modules/
 package-lock.json
+sensor_code/
 
 # Python cache
 __pycache__/
