@@ -11,7 +11,7 @@ def get_connection():
         host=os.getenv("DB_HOST", "localhost"),
         dbname=os.getenv("DB_NAME", "sensor_data"),
         user=os.getenv("DB_USER", "postgres"),
-        password=os.getenv("DB_PASS", "Your_Password_Here"),
+        password=os.getenv("DB_PASS", "bilal"),
         port=os.getenv("DB_PORT", 5432)
     )
 
@@ -82,17 +82,23 @@ async def insert_sample_data(client_id, channel_id, raw_signal, filtered_signal,
             """, (channel_id, 'V'))
             kanal_id = cur.fetchone()[0]
             
-        # Insert the entire signal arrays as arrays in datenpunkt
+        # Insert each raw signal value as a separate datenpunkt
+        datenpunkt_ids = []
         timestamp = datetime.utcnow()
-        cur.execute("""
-            INSERT INTO datenpunkt (kanal_id, timestamp, wert, filtered_wert)
-            VALUES (%s, %s, %s, %s)
-            RETURNING id
-        """, (kanal_id, timestamp, list(map(float, raw_signal)), list(map(float, filtered_signal))))
-        main_datenpunkt_id = cur.fetchone()[0]
+        
+        for i, value in enumerate(raw_signal):
+            point_timestamp = timestamp + timedelta(milliseconds=i * 10)
+            filtered_value = filtered_signal[i] if i < len(filtered_signal) else None
+            cur.execute("""
+                INSERT INTO datenpunkt (kanal_id, timestamp, wert, filtered_wert)
+                VALUES (%s, %s, %s, %s)
+                RETURNING id
+            """, (kanal_id, point_timestamp, float(value), filtered_value))
+            datenpunkt_ids.append(cur.fetchone()[0])
         
         # Use the first datenpunkt for features and classification
-        if main_datenpunkt_id:
+        if datenpunkt_ids:
+            main_datenpunkt_id = datenpunkt_ids[0]
             
             # Insert features into merkmale table
             feature_names = [

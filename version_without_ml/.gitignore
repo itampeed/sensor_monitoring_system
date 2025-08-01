@@ -1,5 +1,6 @@
 # Explicitly ignore these even if matched by exception
 AUTH_CLIENT_GUIDE.md
+.env
 .venv/
 node_modules/
 package-lock.json

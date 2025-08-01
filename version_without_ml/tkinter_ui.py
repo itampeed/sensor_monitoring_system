@@ -13,7 +13,7 @@ from app.db.db_handler import fetch_latest_samples
 from scipy.interpolate import make_interp_spline
 
 # --- UI State ---
-SAMPLE_LIMIT = 1000
+SAMPLE_LIMIT = 50
 samples = []
 selected_sample_idx = 0
 has_data = False
@@ -102,47 +102,35 @@ def update_ui():
         sample = {}
 
     # Plot raw signal
-    fig1, ax1 = plt.subplots(figsize=(5, 3))
-    if has_data and raw_signal and len(raw_signal) > 1:
-        x = np.linspace(0, 1, len(raw_signal))
-        if len(raw_signal) >= 4:
-            x_smooth = np.linspace(x.min(), x.max(), 300)
-            spline = make_interp_spline(x, raw_signal, k=3)
-            y_smooth = spline(x_smooth)
-            ax1.plot(x_smooth, y_smooth, color='navy')
-        else:
-            ax1.plot(x, raw_signal, marker='o', color='navy')
-        ax1.set_xlabel("t", fontsize=10)
-        ax1.set_ylabel("y", fontsize=10)
+    fig1, ax1 = plt.subplots(figsize=(4, 2))
+    if has_data and raw_signal:
+        x = np.arange(len(raw_signal))
+        x_smooth = np.linspace(x.min(), x.max(), 300)  # More points for smoothness
+        spline = make_interp_spline(x, raw_signal, k=3)  # Cubic spline
+        y_smooth = spline(x_smooth)
+        
+        ax1.plot(x_smooth, y_smooth)
+        ax1.set_title("Raw Signal")
     else:
         ax1.text(0.5, 0.5, 'NO DATA', fontsize=16, ha='center', va='center', color='red')
-        ax1.set_xlabel("t", fontsize=10)
-        ax1.set_ylabel("y", fontsize=10)
-    ax1.spines['top'].set_visible(False)
-    ax1.spines['right'].set_visible(False)
+        ax1.set_title("Raw Signal")
     canvas1 = FigureCanvasTkAgg(fig1, master=raw_frame)
     canvas1.get_tk_widget().pack(fill='both', expand=True)
     canvas1.draw()
 
     # Plot filtered signal
-    fig2, ax2 = plt.subplots(figsize=(5, 3))
-    if has_data and filtered_signal and len(filtered_signal) > 1:
-        x2 = np.linspace(0, 1, len(filtered_signal))
-        if len(filtered_signal) >= 4:
-            x2_smooth = np.linspace(x2.min(), x2.max(), 300)
-            spline2 = make_interp_spline(x2, filtered_signal, k=3)
-            y2_smooth = spline2(x2_smooth)
-            ax2.plot(x2_smooth, y2_smooth, color='darkgreen')
-        else:
-            ax2.plot(x2, filtered_signal, marker='o', color='darkgreen')
-            ax2.set_xlabel("t", fontsize=10)
-            ax2.set_ylabel("y", fontsize=10)
+    fig2, ax2 = plt.subplots(figsize=(4, 2))
+    if has_data and filtered_signal:
+        x2 = np.arange(len(filtered_signal))
+        x2_smooth = np.linspace(x2.min(), x2.max(), 300)
+        spline2 = make_interp_spline(x2, filtered_signal, k=3)
+        y2_smooth = spline2(x2_smooth)
+
+        ax2.plot(x2_smooth, y2_smooth)
+        ax2.set_title("Filtered Signal")
     else:
         ax2.text(0.5, 0.5, 'NO DATA', fontsize=16, ha='center', va='center', color='red')
-        ax2.set_xlabel("t", fontsize=10)
-        ax2.set_ylabel("y", fontsize=10)
-    ax2.spines['top'].set_visible(False)
-    ax2.spines['right'].set_visible(False)
+        ax2.set_title("Filtered Signal")
     canvas2 = FigureCanvasTkAgg(fig2, master=filtered_frame)
     canvas2.get_tk_widget().pack(fill='both', expand=True)
     canvas2.draw()

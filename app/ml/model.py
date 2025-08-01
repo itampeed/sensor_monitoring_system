@@ -42,7 +42,18 @@ def classify_sample(sample):
     global model
     if model is None:
         raise ValueError("[Model] Model has not been loaded. Please call load_model() first.")
-
-    sample_array = np.array(sample).reshape(1, -1)  # Reshape for a single prediction
-    prediction = model.predict(sample_array)[0]
-    return prediction
+    
+    # Add debugging and validation
+    log(f"[Model] classify_sample called with sample type: {type(sample)}, value: {sample}")
+    
+    # Ensure sample is a list or array of numbers
+    if isinstance(sample, dict):
+        raise TypeError(f"[Model] Expected list/array of numbers, got dict: {sample}")
+    
+    try:
+        sample_array = np.array(sample, dtype=float).reshape(1, -1)  # Reshape for a single prediction
+        prediction = model.predict(sample_array)[0]
+        return prediction
+    except Exception as e:
+        log(f"[Model] Error in classify_sample: {e}, sample: {sample}", level="ERROR")
+        raise
